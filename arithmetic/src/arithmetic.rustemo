@@ -1,0 +1,12 @@
+E: E '+' E
+ | E '*' E
+ | '(' E ')'
+ | Number
+;
+
+terminals
+Number: /\d+/;
+Add: '+';
+Mul: '*';
+POpen: '(';
+PClose: ')';
