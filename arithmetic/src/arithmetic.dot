@@ -1,0 +1,47 @@
+
+            digraph grammar {
+            rankdir=LR
+            fontname = "Bitstream Vera Sans"
+            fontsize = 8
+            node[
+                shape=record,
+                style=filled,
+                fillcolor=aliceblue
+            ]
+            nodesep = 0.3
+            edge[dir=black,arrowtail=empty]
+
+        0 -> 1 [label="SHIFT:Number"]
+0 -> 2 [label="SHIFT:POpen"]
+0 [label="0:AUG|0: AUG: . E    \{STOP\}\l|1: E: . E Add E    \{STOP, Add, Mul\}\l2: E: . E Mul E    \{STOP, Add, Mul\}\l3: E: . POpen E PClose    \{STOP, Add, Mul\}\l4: E: . Number    \{STOP, Add, Mul\}\l"]
+0 -> 3 [label="GOTO:E"]
+1 [label="1:Number|4: E: Number .    \{STOP, Add, Mul, PClose\}\l|Reductions:\lSTOP:(4,1), Add:(4,1), Mul:(4,1), PClose:(4,1)"]
+2 -> 1 [label="SHIFT:Number"]
+2 -> 2 [label="SHIFT:POpen"]
+2 [label="2:POpen|3: E: POpen . E PClose    \{STOP, Add, Mul, PClose\}\l|1: E: . E Add E    \{Add, Mul, PClose\}\l2: E: . E Mul E    \{Add, Mul, PClose\}\l3: E: . POpen E PClose    \{Add, Mul, PClose\}\l4: E: . Number    \{Add, Mul, PClose\}\l"]
+2 -> 4 [label="GOTO:E"]
+3 -> ACCEPT [label="STOP"]
+3 -> 5 [label="SHIFT:Add"]
+3 -> 6 [label="SHIFT:Mul"]
+3 [label="3:E|0: AUG: E .    \{STOP\}\l1: E: E . Add E    \{STOP, Add, Mul\}\l2: E: E . Mul E    \{STOP, Add, Mul\}\l"]
+4 -> 5 [label="SHIFT:Add"]
+4 -> 6 [label="SHIFT:Mul"]
+4 -> 7 [label="SHIFT:PClose"]
+4 [label="4:E|3: E: POpen E . PClose    \{STOP, Add, Mul, PClose\}\l1: E: E . Add E    \{Add, Mul, PClose\}\l2: E: E . Mul E    \{Add, Mul, PClose\}\l"]
+5 -> 1 [label="SHIFT:Number"]
+5 -> 2 [label="SHIFT:POpen"]
+5 [label="5:Add|1: E: E Add . E    \{STOP, Add, Mul, PClose\}\l|1: E: . E Add E    \{STOP, Add, Mul, PClose\}\l2: E: . E Mul E    \{STOP, Add, Mul, PClose\}\l3: E: . POpen E PClose    \{STOP, Add, Mul, PClose\}\l4: E: . Number    \{STOP, Add, Mul, PClose\}\l"]
+5 -> 8 [label="GOTO:E"]
+6 -> 1 [label="SHIFT:Number"]
+6 -> 2 [label="SHIFT:POpen"]
+6 [label="6:Mul|2: E: E Mul . E    \{STOP, Add, Mul, PClose\}\l|1: E: . E Add E    \{STOP, Add, Mul, PClose\}\l2: E: . E Mul E    \{STOP, Add, Mul, PClose\}\l3: E: . POpen E PClose    \{STOP, Add, Mul, PClose\}\l4: E: . Number    \{STOP, Add, Mul, PClose\}\l"]
+6 -> 9 [label="GOTO:E"]
+7 [label="7:PClose|3: E: POpen E PClose .    \{STOP, Add, Mul, PClose\}\l|Reductions:\lSTOP:(3,3), Add:(3,3), Mul:(3,3), PClose:(3,3)"]
+8 -> 5 [label="SHIFT:Add"]
+8 -> 6 [label="SHIFT:Mul"]
+8 [label="8:E|1: E: E Add E .    \{STOP, Add, Mul, PClose\}\l1: E: E . Add E    \{STOP, Add, Mul, PClose\}\l2: E: E . Mul E    \{STOP, Add, Mul, PClose\}\l|Reductions:\lSTOP:(1,3), Add:(1,3), Mul:(1,3), PClose:(1,3)", fillcolor="lightpink"]
+9 -> 5 [label="SHIFT:Add"]
+9 -> 6 [label="SHIFT:Mul"]
+9 [label="9:E|2: E: E Mul E .    \{STOP, Add, Mul, PClose\}\l1: E: E . Add E    \{STOP, Add, Mul, PClose\}\l2: E: E . Mul E    \{STOP, Add, Mul, PClose\}\l|Reductions:\lSTOP:(2,3), Add:(2,3), Mul:(2,3), PClose:(2,3)", fillcolor="lightpink"]
+
+}
