@@ -10,7 +10,7 @@ use once_cell::sync::Lazy;
 use rustemo::StringLexer;
 use rustemo::LRBuilder;
 use super::arithmetic_actions;
-use rustemo::{GlrParser, Forest, GssHead};
+use rustemo::{LRParser, LRContext};
 use rustemo::Action::{self, Shift, Reduce, Accept};
 #[allow(unused_imports)]
 use rustemo::debug::{log, logn};
@@ -208,8 +208,8 @@ fn action_pclose_s7(token_kind: TokenKind) -> Vec<Action<State, ProdKind>> {
 fn action_e_s8(token_kind: TokenKind) -> Vec<Action<State, ProdKind>> {
     match token_kind {
         TK::STOP => Vec::from(&[Reduce(PK::EAdd, 3usize)]),
-        TK::Add => Vec::from(&[Shift(State::AddS5), Reduce(PK::EAdd, 3usize)]),
-        TK::Mul => Vec::from(&[Shift(State::MulS6), Reduce(PK::EAdd, 3usize)]),
+        TK::Add => Vec::from(&[Reduce(PK::EAdd, 3usize)]),
+        TK::Mul => Vec::from(&[Shift(State::MulS6)]),
         TK::PClose => Vec::from(&[Reduce(PK::EAdd, 3usize)]),
         _ => vec![],
     }
@@ -217,8 +217,8 @@ fn action_e_s8(token_kind: TokenKind) -> Vec<Action<State, ProdKind>> {
 fn action_e_s9(token_kind: TokenKind) -> Vec<Action<State, ProdKind>> {
     match token_kind {
         TK::STOP => Vec::from(&[Reduce(PK::EMul, 3usize)]),
-        TK::Add => Vec::from(&[Shift(State::AddS5), Reduce(PK::EMul, 3usize)]),
-        TK::Mul => Vec::from(&[Shift(State::MulS6), Reduce(PK::EMul, 3usize)]),
+        TK::Add => Vec::from(&[Reduce(PK::EMul, 3usize)]),
+        TK::Mul => Vec::from(&[Reduce(PK::EMul, 3usize)]),
         TK::PClose => Vec::from(&[Reduce(PK::EMul, 3usize)]),
         _ => vec![],
     }
@@ -343,26 +343,27 @@ for ArithmeticParserDefinition {
         true
     }
     fn grammar_order() -> bool {
-        false
+        true
     }
 }
-pub(crate) type Context<'i, I> = GssHead<'i, I, State, TokenKind>;
+pub(crate) type Context<'i, I> = LRContext<'i, I, State, TokenKind>;
 pub struct ArithmeticParser<
     'i,
     I: InputT + ?Sized,
     L: Lexer<'i, Context<'i, I>, State, TokenKind, Input = I>,
     B,
 >(
-    GlrParser<
+    LRParser<
         'i,
+        Context<'i, I>,
         State,
-        L,
         ProdKind,
         TokenKind,
         NonTermKind,
         ArithmeticParserDefinition,
-        I,
+        L,
         B,
+        I,
     >,
 );
 #[allow(dead_code)]
@@ -376,11 +377,13 @@ impl<
 > {
     pub fn new() -> Self {
         Self(
-            GlrParser::new(
+            LRParser::new(
                 &PARSER_DEFINITION,
+                State::default(),
                 false,
                 false,
                 StringLexer::new(true, &RECOGNIZERS),
+                DefaultBuilder::new(),
             ),
         )
     }
@@ -393,7 +396,7 @@ where
     L: Lexer<'i, Context<'i, I>, State, TokenKind, Input = I>,
     B: LRBuilder<'i, I, Context<'i, I>, State, ProdKind, TokenKind>,
 {
-    type Output = Forest<'i, I, ProdKind, TokenKind>;
+    type Output = B::Output;
     fn parse(&self, input: &'i I) -> Result<Self::Output> {
         self.0.parse(input)
     }

@@ -1,5 +1,5 @@
-E: left=E '+' right=E {Add}
- | left=E '*' right=E {Mul}
+E: left=E '+' right=E {Add, 1, left}
+ | left=E '*' right=E {Mul, 2, left}
  | '(' E ')' {Paren}
  | Number {Num}
 ;
