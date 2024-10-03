@@ -1,7 +1,7 @@
 use rustemo::Parser;
 use std::io;
-// Use the generated parser
-use crate::arithmetic::ArithmeticParser;
+// Use the generated parser and builder
+use crate::arithmetic::{ArithmeticParser, DefaultBuilder};
 
 // Include generated modules
 #[rustfmt::skip]
@@ -24,8 +24,14 @@ fn main() {
 
     println!("Number of interpretations = {}", forest.solutions());
 
-    for (tree_idx, tree) in forest.iter().enumerate() {
-        println!("**** TREE {tree_idx}");
-        println!("{tree:#?}");
-    }
+    // Evaluate each tree from the forest
+    let results = forest
+        .into_iter()
+        .map(|tree| {
+            let mut builder = DefaultBuilder::new();
+            tree.build(&mut builder)
+        })
+        .collect::<Vec<_>>();
+
+    println!("{results:?}");
 }
