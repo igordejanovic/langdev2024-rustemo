@@ -42,19 +42,19 @@ impl From<TokenKind> for usize {
 #[allow(clippy::enum_variant_names)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum ProdKind {
-    EP1,
-    EP2,
-    EP3,
-    EP4,
+    EAdd,
+    EMul,
+    EParen,
+    ENum,
 }
 use ProdKind as PK;
 impl std::fmt::Debug for ProdKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let name = match self {
-            ProdKind::EP1 => "E: E Add E",
-            ProdKind::EP2 => "E: E Mul E",
-            ProdKind::EP3 => "E: POpen E PClose",
-            ProdKind::EP4 => "E: Number",
+            ProdKind::EAdd => "E: E Add E",
+            ProdKind::EMul => "E: E Mul E",
+            ProdKind::EParen => "E: POpen E PClose",
+            ProdKind::ENum => "E: Number",
         };
         write!(f, "{}", name)
     }
@@ -70,10 +70,10 @@ pub enum NonTermKind {
 impl From<ProdKind> for NonTermKind {
     fn from(prod: ProdKind) -> Self {
         match prod {
-            ProdKind::EP1 => NonTermKind::E,
-            ProdKind::EP2 => NonTermKind::E,
-            ProdKind::EP3 => NonTermKind::E,
-            ProdKind::EP4 => NonTermKind::E,
+            ProdKind::EAdd => NonTermKind::E,
+            ProdKind::EMul => NonTermKind::E,
+            ProdKind::EParen => NonTermKind::E,
+            ProdKind::ENum => NonTermKind::E,
         }
     }
 }
@@ -152,10 +152,10 @@ fn action_aug_s0(token_kind: TokenKind) -> Vec<Action<State, ProdKind>> {
 }
 fn action_number_s1(token_kind: TokenKind) -> Vec<Action<State, ProdKind>> {
     match token_kind {
-        TK::STOP => Vec::from(&[Reduce(PK::EP4, 1usize)]),
-        TK::Add => Vec::from(&[Reduce(PK::EP4, 1usize)]),
-        TK::Mul => Vec::from(&[Reduce(PK::EP4, 1usize)]),
-        TK::PClose => Vec::from(&[Reduce(PK::EP4, 1usize)]),
+        TK::STOP => Vec::from(&[Reduce(PK::ENum, 1usize)]),
+        TK::Add => Vec::from(&[Reduce(PK::ENum, 1usize)]),
+        TK::Mul => Vec::from(&[Reduce(PK::ENum, 1usize)]),
+        TK::PClose => Vec::from(&[Reduce(PK::ENum, 1usize)]),
         _ => vec![],
     }
 }
@@ -198,28 +198,28 @@ fn action_mul_s6(token_kind: TokenKind) -> Vec<Action<State, ProdKind>> {
 }
 fn action_pclose_s7(token_kind: TokenKind) -> Vec<Action<State, ProdKind>> {
     match token_kind {
-        TK::STOP => Vec::from(&[Reduce(PK::EP3, 3usize)]),
-        TK::Add => Vec::from(&[Reduce(PK::EP3, 3usize)]),
-        TK::Mul => Vec::from(&[Reduce(PK::EP3, 3usize)]),
-        TK::PClose => Vec::from(&[Reduce(PK::EP3, 3usize)]),
+        TK::STOP => Vec::from(&[Reduce(PK::EParen, 3usize)]),
+        TK::Add => Vec::from(&[Reduce(PK::EParen, 3usize)]),
+        TK::Mul => Vec::from(&[Reduce(PK::EParen, 3usize)]),
+        TK::PClose => Vec::from(&[Reduce(PK::EParen, 3usize)]),
         _ => vec![],
     }
 }
 fn action_e_s8(token_kind: TokenKind) -> Vec<Action<State, ProdKind>> {
     match token_kind {
-        TK::STOP => Vec::from(&[Reduce(PK::EP1, 3usize)]),
-        TK::Add => Vec::from(&[Shift(State::AddS5), Reduce(PK::EP1, 3usize)]),
-        TK::Mul => Vec::from(&[Shift(State::MulS6), Reduce(PK::EP1, 3usize)]),
-        TK::PClose => Vec::from(&[Reduce(PK::EP1, 3usize)]),
+        TK::STOP => Vec::from(&[Reduce(PK::EAdd, 3usize)]),
+        TK::Add => Vec::from(&[Shift(State::AddS5), Reduce(PK::EAdd, 3usize)]),
+        TK::Mul => Vec::from(&[Shift(State::MulS6), Reduce(PK::EAdd, 3usize)]),
+        TK::PClose => Vec::from(&[Reduce(PK::EAdd, 3usize)]),
         _ => vec![],
     }
 }
 fn action_e_s9(token_kind: TokenKind) -> Vec<Action<State, ProdKind>> {
     match token_kind {
-        TK::STOP => Vec::from(&[Reduce(PK::EP2, 3usize)]),
-        TK::Add => Vec::from(&[Shift(State::AddS5), Reduce(PK::EP2, 3usize)]),
-        TK::Mul => Vec::from(&[Shift(State::MulS6), Reduce(PK::EP2, 3usize)]),
-        TK::PClose => Vec::from(&[Reduce(PK::EP2, 3usize)]),
+        TK::STOP => Vec::from(&[Reduce(PK::EMul, 3usize)]),
+        TK::Add => Vec::from(&[Shift(State::AddS5), Reduce(PK::EMul, 3usize)]),
+        TK::Mul => Vec::from(&[Shift(State::MulS6), Reduce(PK::EMul, 3usize)]),
+        TK::PClose => Vec::from(&[Reduce(PK::EMul, 3usize)]),
         _ => vec![],
     }
 }
@@ -525,7 +525,7 @@ for DefaultBuilder {
         _prod_len: usize,
     ) {
         let prod = match prod {
-            ProdKind::EP1 => {
+            ProdKind::EAdd => {
                 let mut i = self
                     .res_stack
                     .split_off(self.res_stack.len() - 3usize)
@@ -535,11 +535,11 @@ for DefaultBuilder {
                         Symbol::NonTerminal(NonTerminal::E(p0)),
                         _,
                         Symbol::NonTerminal(NonTerminal::E(p1)),
-                    ) => NonTerminal::E(arithmetic_actions::e_c1(&*context, p0, p1)),
+                    ) => NonTerminal::E(arithmetic_actions::e_add(&*context, p0, p1)),
                     _ => panic!("Invalid symbol parse stack data."),
                 }
             }
-            ProdKind::EP2 => {
+            ProdKind::EMul => {
                 let mut i = self
                     .res_stack
                     .split_off(self.res_stack.len() - 3usize)
@@ -549,30 +549,30 @@ for DefaultBuilder {
                         Symbol::NonTerminal(NonTerminal::E(p0)),
                         _,
                         Symbol::NonTerminal(NonTerminal::E(p1)),
-                    ) => NonTerminal::E(arithmetic_actions::e_c2(&*context, p0, p1)),
+                    ) => NonTerminal::E(arithmetic_actions::e_mul(&*context, p0, p1)),
                     _ => panic!("Invalid symbol parse stack data."),
                 }
             }
-            ProdKind::EP3 => {
+            ProdKind::EParen => {
                 let mut i = self
                     .res_stack
                     .split_off(self.res_stack.len() - 3usize)
                     .into_iter();
                 match (i.next().unwrap(), i.next().unwrap(), i.next().unwrap()) {
                     (_, Symbol::NonTerminal(NonTerminal::E(p0)), _) => {
-                        NonTerminal::E(arithmetic_actions::e_e(&*context, p0))
+                        NonTerminal::E(arithmetic_actions::e_paren(&*context, p0))
                     }
                     _ => panic!("Invalid symbol parse stack data."),
                 }
             }
-            ProdKind::EP4 => {
+            ProdKind::ENum => {
                 let mut i = self
                     .res_stack
                     .split_off(self.res_stack.len() - 1usize)
                     .into_iter();
                 match i.next().unwrap() {
                     Symbol::Terminal(Terminal::Number(p0)) => {
-                        NonTerminal::E(arithmetic_actions::e_number(&*context, p0))
+                        NonTerminal::E(arithmetic_actions::e_num(&*context, p0))
                     }
                     _ => panic!("Invalid symbol parse stack data."),
                 }

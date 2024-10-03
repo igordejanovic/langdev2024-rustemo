@@ -1,7 +1,7 @@
-E: E '+' E
- | E '*' E
- | '(' E ')'
- | Number
+E: left=E '+' right=E {Add}
+ | left=E '*' right=E {Mul}
+ | '(' E ')' {Paren}
+ | Number {Num}
 ;
 
 terminals

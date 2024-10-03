@@ -11,37 +11,37 @@ pub fn number(_ctx: &Ctx, token: Token) -> Number {
     token.value.into()
 }
 #[derive(Debug, Clone)]
-pub struct EC1 {
-    pub e_1: Box<E>,
-    pub e_3: Box<E>,
+pub struct Add {
+    pub left: Box<E>,
+    pub right: Box<E>,
 }
 #[derive(Debug, Clone)]
-pub struct EC2 {
-    pub e_1: Box<E>,
-    pub e_3: Box<E>,
+pub struct Mul {
+    pub left: Box<E>,
+    pub right: Box<E>,
 }
 #[derive(Debug, Clone)]
 pub enum E {
-    C1(EC1),
-    C2(EC2),
-    E(Box<E>),
-    Number(Number),
+    Add(Add),
+    Mul(Mul),
+    Paren(Box<E>),
+    Num(Number),
 }
-pub fn e_c1(_ctx: &Ctx, e_1: E, e_3: E) -> E {
-    E::C1(EC1 {
-        e_1: Box::new(e_1),
-        e_3: Box::new(e_3),
+pub fn e_add(_ctx: &Ctx, left: E, right: E) -> E {
+    E::Add(Add {
+        left: Box::new(left),
+        right: Box::new(right),
     })
 }
-pub fn e_c2(_ctx: &Ctx, e_1: E, e_3: E) -> E {
-    E::C2(EC2 {
-        e_1: Box::new(e_1),
-        e_3: Box::new(e_3),
+pub fn e_mul(_ctx: &Ctx, left: E, right: E) -> E {
+    E::Mul(Mul {
+        left: Box::new(left),
+        right: Box::new(right),
     })
 }
-pub fn e_e(_ctx: &Ctx, e: E) -> E {
-    E::E(Box::new(e))
+pub fn e_paren(_ctx: &Ctx, e: E) -> E {
+    E::Paren(Box::new(e))
 }
-pub fn e_number(_ctx: &Ctx, number: Number) -> E {
-    E::Number(number)
+pub fn e_num(_ctx: &Ctx, number: Number) -> E {
+    E::Num(number)
 }
